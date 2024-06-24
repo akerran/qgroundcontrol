@@ -36,6 +36,8 @@ public:
     DEFINE_SETTINGFACT(disableWhenDisarmed)
     DEFINE_SETTINGFACT(lowLatencyMode)
     DEFINE_SETTINGFACT(forceVideoDecoder)
+    DEFINE_SETTINGFACT(localFilePath)
+    DEFINE_SETTINGFACT(webFilePath)
 
     Q_ENUM(VideoDecoderOptions)
 
@@ -46,8 +48,12 @@ public:
     Q_PROPERTY(QString  tcpVideoSource          READ tcpVideoSource         CONSTANT)
     Q_PROPERTY(QString  mpegtsVideoSource       READ mpegtsVideoSource      CONSTANT)
     Q_PROPERTY(QString  disabledVideoSource     READ disabledVideoSource    CONSTANT)
+    Q_PROPERTY(QString  localFileVideoSource    READ localFileVideoSource   CONSTANT)
+    Q_PROPERTY(QString  webFileVideoSource      READ webFileVideoSource     CONSTANT)
 
     bool     streamConfigured       ();
+    QString  localFileVideoSource   () { return videoSourceLocalFile; }
+    QString  webFileVideoSource     () { return videoSourceWebFile; }
     QString  rtspVideoSource        () { return videoSourceRTSP; }
     QString  udp264VideoSource      () { return videoSourceUDPH264; }
     QString  udp265VideoSource      () { return videoSourceUDPH265; }
@@ -57,6 +63,8 @@ public:
 
     static const char* videoSourceNoVideo;
     static const char* videoDisabled;
+    static const char* videoSourceLocalFile;
+    static const char* videoSourceWebFile;
     static const char* videoSourceUDPH264;
     static const char* videoSourceUDPH265;
     static const char* videoSourceRTSP;

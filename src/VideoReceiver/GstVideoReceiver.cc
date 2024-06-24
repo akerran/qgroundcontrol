@@ -761,6 +761,8 @@ GstVideoReceiver::_makeSource(const QString& uri)
     bool isUdp265   = uri.contains("udp265://", Qt::CaseInsensitive);
     bool isTcpMPEGTS= uri.contains("tcp://",    Qt::CaseInsensitive);
     bool isUdpMPEGTS= uri.contains("mpegts://", Qt::CaseInsensitive);
+    bool isWebFile  = uri.contains("https://",  Qt::CaseInsensitive);
+    bool isLocalFile= (uri.contains(".mpg",  Qt::CaseInsensitive) && !isWebFile);
 
     GstElement* source  = nullptr;
     GstElement* buffer  = nullptr;
@@ -775,6 +777,14 @@ GstVideoReceiver::_makeSource(const QString& uri)
         if(isTcpMPEGTS) {
             if ((source = gst_element_factory_make("tcpclientsrc", "source")) != nullptr) {
                 g_object_set(static_cast<gpointer>(source), "host", qPrintable(url.host()), "port", url.port(), nullptr);
+            }
+        } else if (isLocalFile) {
+            if ((source = gst_element_factory_make("filesrc", "source")) != nullptr) {
+                g_object_set(static_cast<gpointer>(source), "location", qPrintable(uri), NULL);
+            }
+        } else if (isWebFile) {
+            if ((source = gst_element_factory_make("souphttpsrc", "source")) != nullptr) {
+                g_object_set(static_cast<gpointer>(source), "location", qPrintable(uri), NULL);
             }
         } else if (isRtsp) {
             if ((source = gst_element_factory_make("rtspsrc", "source")) != nullptr) {
@@ -917,8 +927,8 @@ GstVideoReceiver::_makeDecoder(GstCaps* caps, GstElement* videoSink)
     GstElement* decoder = nullptr;
 
     do {
-        if ((decoder = gst_element_factory_make("decodebin3", nullptr)) == nullptr) {
-            qCCritical(VideoReceiverLog) << "gst_element_factory_make('decodebin3') failed";
+        if ((decoder = gst_element_factory_make("decodebin", nullptr)) == nullptr) {
+            qCCritical(VideoReceiverLog) << "gst_element_factory_make('decodebin') failed";
             break;
         }
     } while(0);

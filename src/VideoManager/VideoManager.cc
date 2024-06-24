@@ -559,7 +559,9 @@ VideoManager::isGStreamer()
 {
 #if defined(QGC_GST_STREAMING)
     QString videoSource = _videoSettings->videoSource()->rawValue().toString();
-    return videoSource == VideoSettings::videoSourceUDPH264 ||
+    return videoSource == VideoSettings::videoSourceLocalFile ||
+            videoSource == VideoSettings::videoSourceWebFile ||
+            videoSource == VideoSettings::videoSourceUDPH264 ||
             videoSource == VideoSettings::videoSourceUDPH265 ||
             videoSource == VideoSettings::videoSourceRTSP ||
             videoSource == VideoSettings::videoSourceTCP ||
@@ -675,6 +677,16 @@ VideoManager::_updateSettings(unsigned id)
             if (id == 0) {
                 qCDebug(VideoManagerLog) << "Configure primary stream:" << pInfo->uri();
                 switch(pInfo->type()) {
+                    case VIDEO_STREAM_TYPE_LOCAL:
+                        if ((settingsChanged |= _updateVideoUri(id, pInfo->uri()))) {
+                            _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceLocalFile);
+                        }
+                    break;
+                    case VIDEO_STREAM_TYPE_WEB:
+                        if ((settingsChanged |= _updateVideoUri(id, pInfo->uri()))) {
+                            _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceWebFile);
+                        }
+                        break;
                     case VIDEO_STREAM_TYPE_RTSP:
                         if ((settingsChanged |= _updateVideoUri(id, pInfo->uri()))) {
                             _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceRTSP);
@@ -709,6 +721,8 @@ VideoManager::_updateSettings(unsigned id)
                 if (pTinfo) {
                     qCDebug(VideoManagerLog) << "Configure secondary stream:" << pTinfo->uri();
                     switch(pTinfo->type()) {
+                        case VIDEO_STREAM_TYPE_LOCAL:
+                        case VIDEO_STREAM_TYPE_WEB:
                         case VIDEO_STREAM_TYPE_RTSP:
                         case VIDEO_STREAM_TYPE_TCP_MPEG:
                             settingsChanged |= _updateVideoUri(id, pTinfo->uri());
@@ -729,7 +743,11 @@ VideoManager::_updateSettings(unsigned id)
         }
     }
     QString source = _videoSettings->videoSource()->rawValue().toString();
-    if (source == VideoSettings::videoSourceUDPH264)
+    if (source == VideoSettings::videoSourceLocalFile)
+        settingsChanged |= _updateVideoUri(0, _videoSettings->localFilePath()->rawValue().toString());
+    else if (source == VideoSettings::videoSourceWebFile)
+        settingsChanged |= _updateVideoUri(0, _videoSettings->webFilePath()->rawValue().toString());
+    else if (source == VideoSettings::videoSourceUDPH264)
         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
     else if (source == VideoSettings::videoSourceUDPH265)
         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));

@@ -11,6 +11,20 @@
     "default":     ""
 },
 {
+    "name":             "localFilePath",
+    "shortDesc": "Local file path",
+    "longDesc":  "Local file path. Example: /tmp/video.mpg",
+    "type":             "string",
+    "default":     ""
+},
+{
+    "name":             "webFilePath",
+    "shortDesc": "Web video source",
+    "longDesc":  "Web location for video source file. Example: https://samples.ffmpeg.org/MPEG2/mpegts-klv/Day Flight.mpg",
+    "type":             "string",
+    "default":     ""
+},
+{
     "name":             "udpPort",
     "shortDesc": "Video UDP Port",
     "longDesc":  "UDP port to bind to for video stream.",

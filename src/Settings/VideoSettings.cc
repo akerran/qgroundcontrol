@@ -21,6 +21,8 @@
 
 const char* VideoSettings::videoSourceNoVideo           = QT_TRANSLATE_NOOP("VideoSettings", "No Video Available");
 const char* VideoSettings::videoDisabled                = QT_TRANSLATE_NOOP("VideoSettings", "Video Stream Disabled");
+const char* VideoSettings::videoSourceLocalFile         = QT_TRANSLATE_NOOP("VideoSettings", "Local File Stream");
+const char* VideoSettings::videoSourceWebFile           = QT_TRANSLATE_NOOP("VideoSettings", "Web Location Stream");
 const char* VideoSettings::videoSourceRTSP              = QT_TRANSLATE_NOOP("VideoSettings", "RTSP Video Stream");
 const char* VideoSettings::videoSourceUDPH264           = QT_TRANSLATE_NOOP("VideoSettings", "UDP h.264 Video Stream");
 const char* VideoSettings::videoSourceUDPH265           = QT_TRANSLATE_NOOP("VideoSettings", "UDP h.265 Video Stream");
@@ -39,6 +41,8 @@ DECLARE_SETTINGGROUP(Video, "Video")
     // Setup enum values for videoSource settings into meta data
     QVariantList videoSourceList;
 #ifdef QGC_GST_STREAMING
+    videoSourceList.append(videoSourceLocalFile);
+    videoSourceList.append(videoSourceWebFile);
     videoSourceList.append(videoSourceRTSP);
 #ifndef NO_UDP_VIDEO
     videoSourceList.append(videoSourceUDPH264);
@@ -181,6 +185,24 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, rtspUrl)
     return _rtspUrlFact;
 }
 
+DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, localFilePath)
+{
+    if (!_localFilePathFact) {
+        _localFilePathFact = _createSettingsFact(localFilePathName);
+        connect(_localFilePathFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+    }
+    return _localFilePathFact;
+}
+
+DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, webFilePath)
+{
+    if (!_webFilePathFact) {
+        _webFilePathFact = _createSettingsFact(webFilePathName);
+        connect(_webFilePathFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+    }
+    return _webFilePathFact;
+}
+
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, tcpUrl)
 {
     if (!_tcpUrlFact) {
@@ -204,6 +226,16 @@ bool VideoSettings::streamConfigured(void)
     QString vSource = videoSource()->rawValue().toString();
     if(vSource == videoSourceNoVideo || vSource == videoDisabled) {
         return false;
+    }
+    //-- If Local File, check for file path
+    if(vSource == videoSourceLocalFile) {
+        qCDebug(VideoManagerLog) << "Testing configuration for Local File Stream:" << localFilePath()->rawValue().toString();
+        return !localFilePath()->rawValue().toString().isEmpty();
+    }
+    //-- If Web Location, check for URL
+    if(vSource == videoSourceWebFile) {
+        qCDebug(VideoManagerLog) << "Testing configuration for Web Location Stream:" << webFilePath()->rawValue().toString();
+        return !webFilePath()->rawValue().toString().isEmpty();
     }
     //-- If UDP, check if port is set
     if(vSource == videoSourceUDPH264 || vSource == videoSourceUDPH265) {

@@ -29,6 +29,8 @@ SettingsPage {
     property bool   _isRTSP:                    _isGst && _videoSource === _videoSettings.rtspVideoSource
     property bool   _isTCP:                     _isGst && _videoSource === _videoSettings.tcpVideoSource
     property bool   _isMPEGTS:                  _isGst && _videoSource === _videoSettings.mpegtsVideoSource
+    property bool   _isLocalFile:               _isGst && _videoSource === _videoSettings.localFileVideoSource
+    property bool   _isWebFile:                 _isGst && _videoSource === _videoSettings.webFileVideoSource
     property bool   _videoAutoStreamConfig:     _videoManager.autoStreamConfigured
     property real   _urlFieldWidth:             ScreenTools.defaultFontPixelWidth * 25
     property bool   _requiresUDPPort:           _isUDP264 || _isUDP265 || _isMPEGTS
@@ -51,7 +53,24 @@ SettingsPage {
     SettingsGroupLayout {
         Layout.fillWidth:   true
         heading:            qsTr("Connection")
-        visible:            !_videoAutoStreamConfig && (_isTCP || _isRTSP | _requiresUDPPort)
+        visible:            !_videoAutoStreamConfig && (_isLocalFile || _isWebFile || _isTCP || _isRTSP | _requiresUDPPort)
+
+        LabelledFactTextField {
+            Layout.fillWidth:           true
+            textFieldPreferredWidth:    _urlFieldWidth
+            label:                      qsTr("File path")
+            fact:                       _videoSettings.localFilePath
+            visible:                    _isLocalFile && _videoSettings.localFilePath.visible
+        }
+
+
+        LabelledFactTextField {
+            Layout.fillWidth:           true
+            textFieldPreferredWidth:    _urlFieldWidth
+            label:                      qsTr("Web URL")
+            fact:                       _videoSettings.webFilePath
+            visible:                    _isWebFile && _videoSettings.webFilePath.visible
+        }
 
         LabelledFactTextField {
             Layout.fillWidth:           true
