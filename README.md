@@ -1,21 +1,28 @@
-# QGroundControl Ground Control Station
+# Technical task implementation summary
 
-[![Releases](https://img.shields.io/github/release/mavlink/QGroundControl.svg)](https://github.com/mavlink/QGroundControl/releases)
+Added ability to stream video from two new sources:
+* local video file
+* web location
 
-*QGroundControl* (QGC) is an intuitive and powerful ground control station (GCS) for UAVs.
+# Some implementation details:
+* src/VideoReceiver/GstVideoReceiver.cc - the main functionality implemented in this file, where were added new gstreamer source elements for local file (filesrc) and for web location (souphttpsrc). New sources were imported into existing flow, so that existing pipeline schema with both gstreamer decoder and recorder queues are left unaffected.
+* src/UI/preferences/VideoSettings.qml - new UI elements in Video menu to handle connection strings for new sources
+* libs/mavlink/include/mavlink/v2.0/common/common.h - changes in this submodule were added in order to support new types of video sources, therefore updated enum VIDEO_STREAM_TYPE with new members:
+  * VIDEO_STREAM_TYPE_LOCAL=4, /* Stream local video file (URI gives the file path) | */
+  * VIDEO_STREAM_TYPE_WEB=5, /* Stream is web video file (URI gives the URL of video file) | */
 
-The primary goal of QGC is ease of use for both first time and professional users.
-It provides full flight control and mission planning for any MAVLink enabled drone, and vehicle setup for both PX4 and ArduPilot powered UAVs. Instructions for *using QGroundControl* are provided in the [User Manual](https://docs.qgroundcontrol.com/en/) (you may not need them because the UI is very intuitive!)
+# Installation and running prerequisites
+This fork of qgroundcontrol software has the same requirements as original one:
+gstreamer libraries and Qt6.6.3 installed
+ 
 
-All the code is open-source, so you can contribute and evolve it as you want.
-The [Developer Guide](https://dev.qgroundcontrol.com/en/) explains how to [build](https://dev.qgroundcontrol.com/en/getting_started/) and extend QGC.
+In order to stream local file:
+Application settings --> Video --> Video source: Choose "Local File Stream" option from drop box
+enter full path for video file to be streamed, e.g. /home/username/Videos/video.mpg
+Turn off "Low latency" option
 
-[New features in this release](https://github.com/mavlink/qgroundcontrol/blob/master/ChangeLog.md)
 
-Key Links:
-* [Website](http://qgroundcontrol.com) (qgroundcontrol.com)
-* [User Manual](https://docs.qgroundcontrol.com/en/)
-* [Developer Guide](https://dev.qgroundcontrol.com/en/)
-* [Discussion/Support](https://docs.qgroundcontrol.com/en/Support/Support.html)
-* [Contributing](https://dev.qgroundcontrol.com/en/contribute/)
-* [License](https://github.com/mavlink/qgroundcontrol/blob/master/COPYING.md)
+Stream video from web location:
+Application settings --> Video --> Video source: Choose "Web Location Stream" option from drop box
+enter full path for video file to be streamed, e.g. 
+Turn on "Low latency" option
